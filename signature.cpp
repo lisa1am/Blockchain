@@ -42,6 +42,7 @@ void generatePairKey(char private[], char public[]){
 	uint8_t privateKeyInt[32];
 	uint8_t publicKeyInt[64];
 
+	srand(time(0));
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[rand()%5]);
 
 	to_string(publicKeyInt, public);
@@ -58,6 +59,7 @@ void sign(char private[], char hash[], char signature[]){
 	from_string(private,privateKeyInt);
 	from_string(hash, hashInt);
 
+	srand(time(0));
 	uECC_sign(privateKeyInt, hashInt, sizeof(hashInt), sigInt, curves[rand()%5]);
 
 	to_string(sigInt, signature);
@@ -72,6 +74,7 @@ bool verify(char public[], char hash[], char signature[]){
 	from_string(public, publicKeyInt);
 	from_string(hash, hashInt);
 
+	srand(time(0));
 	if(uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[rand()%5])){
 		to_string(sigInt, signature);
 		return true;
