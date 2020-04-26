@@ -1,9 +1,17 @@
+
 /* Copyright 2014, Kenneth MacKay. Licensed under the BSD 2-clause license. */
 
 #include "uECC.h"
-
+#include <stdlib.h>
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+ 
+
+
+
+
 
 void vli_print(char *str, uint8_t *vli, unsigned int size) {
     printf("%s ", str);
@@ -13,86 +21,76 @@ void vli_print(char *str, uint8_t *vli, unsigned int size) {
     printf("\n");
 }
 
+
+
 int main() {
-    int i;
+
+    int i=0;
     int success;
-    uint8_t private[32];
-    uint8_t public[64];
+    uint8_t privateA[32], privateB[32];
+    uint8_t publicA[64], publicB[64];
     uint8_t public_computed[64];
+    uint8_t sig[64];
+    uint8_t hash[32];
+    int randm;
+
+
     
-    int c;
-    
-    const struct uECC_Curve_t * curves[5];
+    const struct uECC_Curve_t * curves[1];
     int num_curves = 0;
-#if uECC_SUPPORTS_secp160r1
-    curves[num_curves++] = uECC_secp160r1();
-#endif
-#if uECC_SUPPORTS_secp192r1
-    curves[num_curves++] = uECC_secp192r1();
-#endif
-#if uECC_SUPPORTS_secp224r1
-    curves[num_curves++] = uECC_secp224r1();
-#endif
-#if uECC_SUPPORTS_secp256r1
-    curves[num_curves++] = uECC_secp256r1();
-#endif
-#if uECC_SUPPORTS_secp256k1
-    curves[num_curves++] = uECC_secp256k1();
-#endif
+    #if uECC_SUPPORTS_secp160r1
+    	curves[num_curves++] = uECC_secp160r1();
+    #endif
 
-   
-    
-        printf("********GENERATE**********\n");
-        uECC_make_key(public, private, curves[3]);
-        i=0;
-        printf("\nPrivate = ");
-	for(i=0; i<32;i++){
-                printf("%hhu", private[i]);
-        }
-        printf("\n");
+    	
+    printf("\n\n**********************GENERATE********************\n\n");
+    srand(time(0));
+    randm=rand()%5;
 
-        i=0;
-	printf("\nPublic = ");
-        for(i=0; i<64;i++){
-                printf("%hhu", public[i]);
-        }
-	printf("\n");
+    // Generate two pai of keys A and B
+	uECC_make_key(publicA, privateA, curves[randm]);
+    uECC_make_key(publicB, privateB, curves[randm]);
 
-        uECC_compute_public_key(private, public_computed, curves[3]);
-	i=0;
-	printf("\nCompted public = ");
-        for(i=0; i<64;i++){
-                printf("%hhu", public_computed[i]);
-        }
+    vli_print("Private key A = \n", privateA, sizeof(privateA));
+    vli_print("Public key A = \n", publicA, sizeof(publicA));
+
+    printf("\n");
+
+    vli_print("Private key B = \n", privateB, sizeof(privateB));
+    vli_print("Public key B = \n", publicB, sizeof(publicB));
+
+    printf("\n");
+
+    // takes random hash for testing
+	memcpy(hash, publicB, sizeof(hash));
+	vli_print("The hash to sign is = \n", hash, sizeof(hash));
+
+    printf("\n");
+
+	uECC_sign(privateA, hash, sizeof(hash), sig, curves[randm]);
+	vli_print("Signature with private key A = \n", sig, sizeof(sig));
 
 	printf("\n");
 
-	uint8_t sig[64];
-	uint8_t hash[32];
-	printf("\nHASH = ");
-	memcpy(hash, public, sizeof(hash));
-	for(i=0; i<32; i++){
-                printf("%hhu",hash[i]);
-        }
 
-	printf("\n");
-
-	uECC_sign(private, hash, sizeof(hash), sig, curves[3]);
-	printf("\nSiganture=");
-	for(i=0; i<32; i++){
-		printf("%hhu",sig[i]);
-	}
-
-	printf("\n");
-
-	if(uECC_verify(public, hash, sizeof(hash), sig, curves[3])){
-		printf("\nSIGNATURE VERIFIEE !\n");
+    printf("Verify signature with public key A : \n");
+	if(uECC_verify(publicA, hash, sizeof(hash), sig, curves[randm])){
+		printf("VALID SIGNATURE !\n");
 	}
 	else{
-		printf("\nSIGNATURE FAKE !\n");
+		printf("NON VALID SIGNATURE !\n");
 	}
 
+    printf("Verify signature with public key B : \n");
+    if(uECC_verify(publicB, hash, sizeof(hash), sig, curves[randm])){
+        printf("VALID SIGNATURE !\n");
+    }
+    else{
+        printf("NON VALID SIGNATURE !\n");
+    }
 
 
     return 0;
+
 }
+
