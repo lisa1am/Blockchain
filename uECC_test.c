@@ -38,18 +38,18 @@ int main() {
     
     const struct uECC_Curve_t * curves[1];
     int num_curves = 0;
-    #if uECC_SUPPORTS_secp160r1
-    	curves[num_curves++] = uECC_secp160r1();
+    #if uECC_SUPPORTS_secp256r1
+        curves[num_curves++] = uECC_secp256r1();
     #endif
 
-    	
+   
     printf("\n\n**********************GENERATE********************\n\n");
-    srand(time(0));
-    randm=rand()%5;
+
 
     // Generate two pai of keys A and B
-	uECC_make_key(publicA, privateA, curves[randm]);
-    uECC_make_key(publicB, privateB, curves[randm]);
+	uECC_make_key(publicA, privateA, curves[0]);
+    uECC_make_key(publicB, privateB, curves[0]);
+    
 
     vli_print("Private key A = \n", privateA, sizeof(privateA));
     vli_print("Public key A = \n", publicA, sizeof(publicA));
@@ -74,7 +74,7 @@ int main() {
 
 
     printf("Verify signature with public key A : \n");
-	if(uECC_verify(publicA, hash, sizeof(hash), sig, curves[randm])){
+	if(uECC_verify(publicA, hash, sizeof(hash), sig, curves[0])){
 		printf("VALID SIGNATURE !\n");
 	}
 	else{
@@ -82,7 +82,7 @@ int main() {
 	}
 
     printf("Verify signature with public key B : \n");
-    if(uECC_verify(publicB, hash, sizeof(hash), sig, curves[randm])){
+    if(uECC_verify(publicB, hash, sizeof(hash), sig, curves[0])){
         printf("VALID SIGNATURE !\n");
     }
     else{
