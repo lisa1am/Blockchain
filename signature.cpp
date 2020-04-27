@@ -45,7 +45,7 @@ void from_string(char str[], uint8_t arr[]) {
   int cum = 1;
   int step = 3;
   int i;
-  for (i = 0; cum < strlen(str); i++) {
+  for (i = 0; cum <= strlen(str); i++) {
     char sub[step];
     substr(str, sub,cum, step);
     if(atoi(sub) > 255) {
@@ -54,11 +54,10 @@ void from_string(char str[], uint8_t arr[]) {
     } else cum += step;
     arr[i] = atoi(sub);
     }
-	size = i;
 }
 
  
-void to_string(uint8_t arr[], char str[]) {
+void to_string(uint8_t arr[], char str[], int size) {
 
   char* s_buff = (char*)malloc(sizeof(char)*3);
   for (int i = 0; i < size; i++) {
@@ -81,14 +80,8 @@ void generatePairKey(char priv[], char pub[]){
 
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
 
-	cout << "\nPRIV INT = ";
-	vli_print(privateKeyInt, sizeof(privateKeyInt));
-	cout << "\nPUB INT = ";
-	vli_print(publicKeyInt, sizeof(publicKeyInt));
-
-
-	to_string(publicKeyInt, pub);
-	to_string(privateKeyInt, priv);
+	to_string(publicKeyInt, pub, 64);
+	to_string(privateKeyInt, priv, 32);
 }
 
 
@@ -108,14 +101,15 @@ void sign(char priv[], char hash_code[], char sig[]){
 	uECC_sign(privateKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]);
 
 
-	/*cout << "\n\nPRIV INT = ";
-	vli_print(privateKeyInt, sizeof(privateKeyInt));
-	cout << "\nHASH INT = ";
-	vli_print(hashInt, sizeof(hashInt));
-	cout << "\nSIG INT = ";
-	vli_print(sigInt, sizeof(sigInt));*/
+	to_string(sigInt, sig, 64);
+	std::cout << "\nSIGNATURE CHAR SIGN() = " << sig;
 
-	to_string(sigInt, sig);
+
+	cout << "\nSIGNATURE BASE 10 SIGN() = ";
+	for(int i=0; i<64; i++){
+		printf("%d", sigInt[i]);
+	}
+	cout << "\n";
 }
 
 bool verify(char pub[], char hash_code[], char sig[]){
@@ -130,9 +124,24 @@ bool verify(char pub[], char hash_code[], char sig[]){
 
 	from_string(pub, publicKeyInt);
 	from_string(hash_code, hashInt);
+	from_string(sig, sigInt);
+
+	std::cout << "\nSIGNATURE CHAR VERIFY() = " << sig;
+
+	cout << "\nSIGNATURE BASE 10 VERIFY() = ";
+	for(int i=0; i<64; i++){
+		printf("%d", sigInt[i]);
+	}
+	cout << "\n";
+
 
 	if(uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0])){
-		to_string(sigInt, sig);
+
+		cout << "\nSIG INT = ";
+		vli_print(sigInt, sizeof(sigInt));
+
+		to_string(sigInt, sig, 64);
+
 		return true;
 	}
 	else{
@@ -142,14 +151,19 @@ bool verify(char pub[], char hash_code[], char sig[]){
 
 
 int main(){
-	/*char priv[100], pub[100], hash_code[100], sig[100];
+	char priv[100], pub[100], hash_code[100], sig[100];
+	uint8_t sigInt[64];
 
 	generatePairKey(priv, pub);
-	std::cout << "\nPRIVATE KEY = " << priv;
-	std::cout << "\n\nPUBLIC KEY = " << pub;
 	sign(priv, hash_code, sig);
-	std::cout << "\nSIGNATURE = " << sig;
-	std::cout << verify(pub, hash_code,sig) << "\n";*/
+	std::cout << "\nSIGNATURE MAIN = " << sig;
+	from_string(sig, sigInt);
+	cout << "\nSIGNATURE BASE 10 MAIN = ";
+	for(int i=0; i<64; i++){
+		printf("%d", sigInt[i]);
+	}
+	cout << "\n";
+	std::cout <<  verify(pub, hash_code,sig) << "\n";
 
 }
 
