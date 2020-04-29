@@ -1,5 +1,3 @@
-
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -156,7 +154,9 @@ bool verify(char pub[], char hash_code[], char sig[]){
 
 
 int main(){
-	char priv[500], pub[500], hash_code[500], sig[500], sigTest[500];
+	char priv[500] = "", pub[500] = "",
+	hash_code[500] = "248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1",
+	sig[500] = "", sigTest[500] = "";
 	uint8_t sigInt[64];
 
 	generatePairKey(priv, pub);
