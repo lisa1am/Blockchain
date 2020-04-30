@@ -16,7 +16,7 @@ const struct uECC_Curve_t * curves[1];
 
 
 
-int size = 32;
+//int size = 32;
 
 
 
@@ -40,29 +40,33 @@ void substr(char s[], char sub[], int p, int l) {
 
 void to_string(uint8_t arr[], char str[], int size) {
  
- char* s_buff = (char*)malloc(sizeof(char)*2);
- for (int i = 0; i < size; i++) {
- sprintf(s_buff, "%x", arr[i]);
- if(arr[i]>15) {
- strcat(str, s_buff);
- } else {
+	char* s_buff = (char*)malloc(sizeof(char)*2);
+	for (int i = 0; i < size; i++) {
+		sprintf(s_buff, "%x", arr[i]);
+		if(arr[i]>15) {
+		 	strcat(str, s_buff);
+		} else {
+			strcat(str, "0");
+			strcat(str, s_buff);
+		}
+	}
+}
 
- strcat(str, "0");
-  strcat(str, s_buff);
- }
- }
-}
+
 void from_string(char str[], uint8_t arr[]) {
- int cum = 1;
- int step = 2;
- int i;
- for (i = 0; cum < strlen(str); i++) {
- char sub[step];
- substr(str, sub,cum, step);
- cum +=step;
- arr[i] = strtol(sub, NULL, 16);
- }
+	int cum = 1;
+	int step = 2;
+	int i;
+	for (i = 0; cum < strlen(str); i++) {
+		char sub[step];
+		substr(str, sub,cum, step);
+		cum +=step;
+		arr[i] = strtol(sub, NULL, 16);
+	 }
 }
+
+
+
 void generatePairKey(char priv[], char pub[]){
 
 	#if uECC_SUPPORTS_secp256r1
@@ -74,7 +78,7 @@ void generatePairKey(char priv[], char pub[]){
 
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
 
-	cout << "\nPUBLIC = \n";
+	/*cout << "\nPUBLIC = \n";
 	for(int i=0; i<64; i++){
 		printf("%d,",publicKeyInt[i]);
 	}
@@ -84,7 +88,7 @@ void generatePairKey(char priv[], char pub[]){
 	for(int i=0; i<32; i++){
 		printf("%d,",privateKeyInt[i]);
 	}
-	cout << "\n";
+	cout << "\n";*/
 
 
 	to_string(publicKeyInt, pub, 64);
@@ -109,15 +113,17 @@ void sign(char priv[], char hash_code[], char sig[]){
 
 
 	to_string(sigInt, sig, 64);
-	std::cout << "\nSIGNATURE CHAR SIGN() = \n" << sig;
+	/*std::cout << "\nSIGNATURE CHAR SIGN() = \n" << sig;
 
 
 	cout << "\nSIGNATURE BASE 10 SIGN() = \n";
 	for(int i=0; i<64; i++){
 		printf("%d,",sigInt[i]);
 	}
-	cout << "\n";
+	cout << "\n";*/
 }
+
+
 
 bool verify(char pub[], char hash_code[], char sig[]){
 
@@ -133,18 +139,16 @@ bool verify(char pub[], char hash_code[], char sig[]){
 	from_string(hash_code, hashInt);
 	from_string(sig, sigInt);
 
-	std::cout << "\nSIGNATURE CHAR VERIFY() = \n" << sig;
+	/*std::cout << "\nSIGNATURE CHAR VERIFY() = \n" << sig;
 
 	cout << "\nSIGNATURE BASE 10 VERIFY() = \n";
 	for(int i=0; i<64; i++){
 		printf("%d,", sigInt[i]);
 	}
-	cout << "\n";
+	cout << "\n";*/
 
-
-	uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]);
 	if(uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0])){
-		cout << "\nVERIFIED!";
+		//cout << "\nVERIFIED!";
 		return true;
 	}
 	else{
@@ -153,7 +157,20 @@ bool verify(char pub[], char hash_code[], char sig[]){
 }
 
 
+#include <boost/python.hpp>
+
+BOOST_PYTHON_MODULE(signature)
+{
+  using namespace boost::python;
+  def("generatePairKey", generatePairKey);
+}
+
 int main(){
+	
+}
+
+
+/*int main(){
 	char priv[500] = "", pub[500] = "",
 	hash_code[500] = "248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1",
 	sig[500] = "", sigTest[500] = "";
@@ -174,7 +191,7 @@ int main(){
 	cout << "\n";
 	std::cout <<  verify(pub, hash_code,sig) << "\n";
 
-}
+}*/
 
 
 
