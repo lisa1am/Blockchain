@@ -2,7 +2,8 @@
 	gcc -fPIC ${CFLAGS} -c $< -o $@
 
 %.o : %.cpp
-	g++ -fPIC ${CPPFLAGS} $< ${CRYPTOLIB}.c ${CRYPTOLIB}.h -o $@
+	#g++ -fPIC ${CPPFLAGS} $< ${CRYPTOLIB}.c ${CRYPTOLIB}.h -o $@
+	g++ -fPIC ${CPPFLAGS} ${CRYPTOLIB}.c ${CRYPTOLIB}.h -c $< -o $@
 
 ${EXE} : ${OBJS}
 	g++ ${OBJS} ${LDFLAGS} -o $@
