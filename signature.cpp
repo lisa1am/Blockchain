@@ -1665,6 +1665,31 @@ void uECC_point_mult(uECC_word_t *result,
 
 const struct uECC_Curve_t * curves[1];
 
+class PairKey{
+	std::string priv;
+	std::string pub;
+
+	public :
+	PairKey(std::string priv_param, std::string pub_param) : priv(priv_param), pub(pub_param){
+	}
+
+	void set_priv(std::string priv_val){
+		this->priv=priv_val;
+	}
+
+	std::string get_priv() const{
+		return priv;
+	}
+
+	void set_pub(std::string pub_val){
+		this->pub=pub_val;
+	}
+
+	std::string get_pub() const{
+		return pub;
+	}
+};
+
 
 
 //int size = 32;
@@ -1718,14 +1743,17 @@ void from_string(char str[], uint8_t arr[]) {
 
 
 
-void generatePairKey(char priv[], char pub[]){
+PairKey* generatePairKey(){
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
 	#endif
 
+
 	uint8_t privateKeyInt[32];
 	uint8_t publicKeyInt[64];
+	char pub[64], priv[32];
+
 
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
 
@@ -1733,9 +1761,9 @@ void generatePairKey(char priv[], char pub[]){
 	for(int i=0; i<64; i++){
 		printf("%d,",publicKeyInt[i]);
 	}
-	cout << "\n";
+	cout << "\n";*/
 
-	cout << "\nPRIVATE = \n";
+	/*cout << "\nPRIVATE = \n";
 	for(int i=0; i<32; i++){
 		printf("%d,",privateKeyInt[i]);
 	}
@@ -1744,6 +1772,8 @@ void generatePairKey(char priv[], char pub[]){
 
 	to_string(publicKeyInt, pub, 64);
 	to_string(privateKeyInt, priv, 32);
+
+	return new PairKey(priv,pub);
 }
 
 
@@ -1813,12 +1843,13 @@ bool verify(char pub[], char hash_code[], char sig[]){
 BOOST_PYTHON_MODULE(signature)
 {
   using namespace boost::python;
+
+  class_<PairKey>("PairKey", init<std::string, std::string>()).add_property("priv", &PairKey::get_priv, &PairKey::set_priv).add_property("pub", &PairKey::get_pub, &PairKey::set_pub);
+
   def("generatePairKey", generatePairKey);
-}
 
-int main(){
 
-}
+
 
 
 /*int main(){

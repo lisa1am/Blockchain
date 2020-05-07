@@ -4,7 +4,8 @@ def generatePairKey(priv, pub):
 	signature.generatePairKey(priv, pub)
 
 
-priv="hghg"
-pub="jhghg"
+priv=""
+pub=""
 generatePairKey(priv, pub)
+print("RESULT = ");
 print(priv)
