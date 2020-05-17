@@ -1666,6 +1666,8 @@ void uECC_point_mult(uECC_word_t *result,
 const struct uECC_Curve_t * curves[1];
 
 class PairKey{
+
+	public:
 	std::string priv;
 	std::string pub;
 
@@ -1714,7 +1716,8 @@ void substr(char s[], char sub[], int p, int l) {
 }
 
 
-void to_string(uint8_t arr[], char str[], int size) {
+void to_string(uint8_t arr[], string str_s, int size) {
+	char str[size];
  
 	char* s_buff = (char*)malloc(sizeof(char)*2);
 	for (int i = 0; i < size; i++) {
@@ -1726,10 +1729,14 @@ void to_string(uint8_t arr[], char str[], int size) {
 			strcat(str, s_buff);
 		}
 	}
+	str_s=str;
 }
 
 
-void from_string(char str[], uint8_t arr[]) {
+
+void from_string(string str_s, uint8_t arr[]) {
+	char str[str_s.length()+1];
+	strcpy(str,str_s.c_str());
 	int cum = 1;
 	int step = 2;
 	int i;
@@ -1740,7 +1747,6 @@ void from_string(char str[], uint8_t arr[]) {
 		arr[i] = strtol(sub, NULL, 16);
 	 }
 }
-
 
 
 PairKey* generatePairKey(){
@@ -1764,10 +1770,17 @@ PairKey* generatePairKey(){
 	cout << "\n";*/
 
 	/*cout << "\nPRIVATE = \n";
-	for(int i=0; i<32; i++){
-		printf("%d,",privateKeyInt[i]);
-	}
-	cout << "\n";*/
+	for(int i=0;void from_string(char str[], uint8_t arr[]) {
+	int cum = 1;
+	int step = 2;
+	int i;
+	for (i = 0; cum < strlen(str); i++) {
+		char sub[step];
+		substr(str, sub,cum, step);
+		cum +=step;
+		arr[i] = strtol(sub, NULL, 16);
+	 }
+}*/
 
 
 	to_string(publicKeyInt, pub, 64);
@@ -1777,7 +1790,9 @@ PairKey* generatePairKey(){
 }
 
 
-void sign(char priv[], char hash_code[], char sig[]){
+std::string sign(string priv, char hash_code[]){
+
+	std::string sig;
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1794,6 +1809,7 @@ void sign(char priv[], char hash_code[], char sig[]){
 
 
 	to_string(sigInt, sig, 64);
+	return(sig);
 	/*std::cout << "\nSIGNATURE CHAR SIGN() = \n" << sig;
 
 
@@ -1844,23 +1860,23 @@ BOOST_PYTHON_MODULE(signature)
 {
   using namespace boost::python;
 
-  class_<PairKey>("PairKey", init<std::string, std::string>()).add_property("priv", &PairKey::get_priv, &PairKey::set_priv).add_property("pub", &PairKey::get_pub, &PairKey::set_pub);
+  //class_<PairKey>("PairKey", init<std::string, std::string>()).add_property("priv", &PairKey::get_priv, &PairKey::set_priv).add_property("pub", &PairKey::get_pub, &PairKey::set_pub);
 
   def("generatePairKey", generatePairKey);
 
+}
 
 
 
-
-/*int main(){
+int main(){
 	char priv[500] = "", pub[500] = "",
 	hash_code[500] = "248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1",
-	sig[500] = "", sigTest[500] = "";
+	sigTest[500] = "";
 	uint8_t sigInt[64];
 
-	generatePairKey(priv, pub);
-	cout << "-------------->\n" << priv << "\n" << pub;
-	sign(priv, hash_code, sig);
+	PairKey* keys = generatePairKey();
+	cout << "-------------->\n" << keys->priv << "\n" << keys->pub;
+	string sig = sign(keys->priv, hash_code);
 	std::cout << "\nSIGNATURE MAIN = \n" << sig;
 	from_string(sig, sigInt);
 	cout << "\nSIGNATURE BASE 10 MAIN = \n";
@@ -1868,12 +1884,12 @@ BOOST_PYTHON_MODULE(signature)
 		printf("%d,", sigInt[i]);
 	}
 	
-	to_string(sigInt, sigTest, 64);
+	
 	cout << "\nSIGNATURE APRES TO_STRING MAIN = \n" << sigTest;
 	cout << "\n";
-	std::cout <<  verify(pub, hash_code,sig) << "\n";
+	std::cout <<  verify(keys->pub, hash_code,sig) << "\n";
 
-}*/
+}
 
 
 
