@@ -1890,9 +1890,9 @@ int main(){
 
 	PairKey* keys = new PairKey();
 
-	//keys->generate_pair_key();
-	keys->set_priv("A33CE45964FF2167F6ECEDD419DB06C1");
-	keys->set_pub("248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1");
+	keys->generate_pair_key();
+	//keys->set_priv("A33CE45964FF2167F6ECEDD419DB06C1");
+	//keys->set_pub("248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1");
 	cout << "PRIVATE = " << keys->get_priv() << "\n";
 	cout << "PUBLIC = " << keys->get_pub() << "\n";
 
