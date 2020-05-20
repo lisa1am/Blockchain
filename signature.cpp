@@ -6,7 +6,7 @@
 #include <string.h>
 #include <iostream>
 
-//#include <boost/python.hpp>
+
 
 
 
@@ -1729,7 +1729,7 @@ class PairKey{
 	std::string pub;
 
 	public :
-	PairKey(std::string priv_param, std::string pub_param) : priv(priv_param), pub(pub_param){
+	PairKey(const std::string priv_param, const std::string pub_param) : priv(priv_param), pub(pub_param){
 	}
 
 	PairKey(){}
@@ -1786,9 +1786,9 @@ class PairKey{
 
 
 
-/*PairKey* generatePairKey(){
+std::string generatePairKey(){
 
-	cout <<"TEST";
+	cout <<"****GENERATE";
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1803,17 +1803,17 @@ class PairKey{
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
 
 
-	to_string(publicKeyInt, pub, 64);
-	to_string(privateKeyInt, priv, 32);
+	pub= to_string(publicKeyInt, 64);
+	priv= to_string(privateKeyInt, 32);
 
 
-	return new PairKey(priv,pub);
-}*/
+	return (pub+"-"+priv);
+}
 
 
 std::string sign(string priv, char hash_code[]){
 
-	cout << "SIGN \n";
+	cout << "****SIGN \n";
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1829,11 +1829,11 @@ std::string sign(string priv, char hash_code[]){
 	uECC_sign(privateKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]);
 
 
-	cout << "\nSIGNATURE INT = \n";
+	/*cout << "\nSIGNATURE INT = \n";
 	for(int i=0; i<64; i++){
 		printf("%d,",sigInt[i]);
 	}
-	cout << "\n";
+	cout << "\n";*/
 
 
 	return(to_string(sigInt, 64));
@@ -1844,7 +1844,7 @@ std::string sign(string priv, char hash_code[]){
 
 bool verify(string pub, char hash_code[], string sig){
 
-	cout << "VERIFY\n";
+	cout << "*****VERIFY\n";
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1871,16 +1871,26 @@ bool verify(string pub, char hash_code[], string sig){
 
 
 
+#include <boost/python.hpp>
+using namespace boost::python;
 
-/*BOOST_PYTHON_MODULE(signature)
+BOOST_PYTHON_MODULE(signature)
 {
-  using namespace boost::python;
+  
 
-  //class_<PairKey>("PairKey", init<std::string, std::string>()).add_property("priv", &PairKey::get_priv, &PairKey::set_priv).add_property("pub", &PairKey::get_pub, &PairKey::set_pub);
+  /*class_<PairKey>("PairKey")
+  	.def("get_priv", &PairKey::get_priv)
+  	.def("set_priv", &PairKey::set_priv)
+  	.def("get_pub", &PairKey::get_pub)
+  	.def("set_pub", &PairKey::set_pub)
+  	.def("generate_pair_key" &PairKey::generate_pair_key);*/
+  //, init<std::string, std::string>()).add_property("priv", &PairKey::get_priv, &PairKey::set_priv).add_property("pub", &PairKey::get_pub, &PairKey::set_pub);
 
   def("generatePairKey", generatePairKey);
+  def("sign", sign);
+  def("verify", verify);
 
-}*/
+}
 
 
 
@@ -1888,7 +1898,12 @@ int main(){
 	char hash_code[500] = "248D6A61D20638B8E5C026930C3E6039";
 
 
-	PairKey* keys = new PairKey();
+	std::string pairKey = generatePairKey();
+	cout << pairKey;
+
+
+
+	/*PairKey* keys = new PairKey();
 
 	keys->generate_pair_key();
 	//keys->set_priv("A33CE45964FF2167F6ECEDD419DB06C1");
@@ -1913,7 +1928,7 @@ int main(){
 		cout << "true\n";
 	}else{
 		cout << "false\n";
-	}
+	}*/
 
 
 
