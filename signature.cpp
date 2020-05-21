@@ -1701,7 +1701,6 @@ void from_string(string hexstr, uint8_t chrs[])
     for (size_t i=0, j=0; j<final_len; i+=2, j++){
         chrs[j] = (hexstr[i] % 32 + 9) % 25 * 16 + (hexstr[i+1] % 32 + 9) % 25;
     }
-    chrs[final_len] = '\0';
 }
 
 
@@ -1715,7 +1714,6 @@ const struct uECC_Curve_t * curves[1];
 
 std::string generatePairKey(){
 
-	cout <<"****GENERATE\n";
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1728,17 +1726,6 @@ std::string generatePairKey(){
 
 
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
-	cout << "\nPUB = \n";
-	for(int i=0; i<64; i++){
-		printf("%d,", publicKeyInt[i]);
-	}
-	cout << "\n";
-	cout << "\nPRIV = \n";
-	for(int i=0; i<32; i++){
-		printf("%d,", privateKeyInt[i]);
-	}
-	cout << "\n";
-
 
 
 	pub= to_string(publicKeyInt, 64);
@@ -1749,8 +1736,6 @@ std::string generatePairKey(){
 
 
 std::string sign(std::string priv, std::string hash_code){
-
-	cout << "****SIGN\n";
 	
 
 	#if uECC_SUPPORTS_secp256r1
@@ -1765,25 +1750,8 @@ std::string sign(std::string priv, std::string hash_code){
 
 	from_string(priv, privateKeyInt);
 	from_string(hash_code, hashInt);
-	cout << "\nPRIV = \n";
-	for(int i=0; i<32; i++){
-		printf("%d,", privateKeyInt[i]);
-	}
-	cout << "\n";
-	cout << "\nHASH = \n";
-	for(int i=0; i<32; i++){
-		printf("%d,", hashInt[i]);
-	}
-	cout << "\n";
-
 	
-
 	uECC_sign(privateKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]);
-	cout << "\nSIG = \n";
-	for(int i=0; i<64; i++){
-		printf("%d,", sigInt[i]);
-	}
-	cout << "\n";
 
 
 	return(to_string(sigInt, 64));
@@ -1793,8 +1761,6 @@ std::string sign(std::string priv, std::string hash_code){
 
 
 bool verify(string pub, string hash_code, string sig){
-
-	cout << "*****VERIFY\n";
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1807,21 +1773,6 @@ bool verify(string pub, string hash_code, string sig){
 	from_string(pub, publicKeyInt);
 	from_string(hash_code, hashInt);
 	from_string(sig, sigInt);
-	cout << "\nPUB = \n";
-	for(int i=0; i<64; i++){
-		printf("%d,", publicKeyInt[i]);
-	}
-	cout << "\n";
-	cout << "\nHASH = \n";
-	for(int i=0; i<32; i++){
-		printf("%d,", hashInt[i]);
-	}
-	cout << "\n";
-	cout << "\nSIG = \n";
-	for(int i=0; i<64; i++){
-		printf("%d,", sigInt[i]);
-	}
-	cout << "\n";
 
 
 	return(uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]));
@@ -1860,29 +1811,42 @@ int main(){
 
 
 	std::string pairKey = generatePairKey();
-	std::string pairKey2 = generatePairKey();
-
-
 	std::string pub = split(pairKey, 0);
-	std::string pub2 = split(pairKey2,0);
-	cout << "PUB = " << pub << "\n";
+	cout << "GENERATED PAIR KEY => PUBLIC AND PRIVATE -> \n";
+	cout << "PUBLIC KEY [A]= " << pub << "\n";
 
 
 	std::string priv = split(pairKey, 1);
-	std::string priv2 = split(pairKey2,1);
-	cout << "PRIV = " << priv << "\n";
+	cout << "PRIVITE KEY [A]= " << priv << "\n";
 
 
 	std::string sig = sign(priv, hash_code);
-	cout << "SIG =" << sig << "\n";
+	cout << "\nSIGNING THE HASH \"" << hash_code << "\" WITH PRIVATE KEY [A]...\n";
+	cout << "SIGNATURE [A]= " << sig << "\n";
 
+	cout << "\nVERIFYING SIGNATURE WITH PUBLIC KEY [A].. \n";
 	if(verify(pub, hash_code, sig)){
 		printf("VALID SIGNATURE !\n");
 	}
 	else{
 		printf("NON VALID SIGNATURE !\n");
 	}
-	
+
+	// trying to verify with public key B, a signature signed with private key A
+	std::string pairKey2 = generatePairKey();
+	std::string pub2 = split(pairKey2,0);
+	cout << "\n\nGENERATED PAIR KEY => PUBLIC AND PRIVATE -> \n";
+	cout << "PUBLIC KEY [B]= " << pub << "\n";
+	cout << "\nVERIFYING SIGNATURE WITH PUBLIC KEY [B].. \n";
+	if(verify(pub2, hash_code, sig)){
+		printf("VALID SIGNATURE !\n");
+	}
+	else{
+		printf("NON VALID SIGNATURE !\n");
+	}
+
+
+
 
 }
 
