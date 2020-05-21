@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 
 
@@ -1682,7 +1684,38 @@ void substr(char s[], char sub[], int p, int l) {
 }
 
 
-std::string to_string(uint8_t arr[], int size) {
+
+std::string to_string(const uint8_t *v, const int s) {
+  std::stringstream ss;
+
+  ss << std::hex << std::setfill('0');
+
+  for (int i = 0; i < s; i++) {
+    ss << std::hex << std::setw(2) << static_cast<int>(v[i]);
+  }
+
+  return ss.str();
+}
+
+
+
+void from_string(string hexstr, uint8_t chrs[])
+{
+    size_t len = hexstr.length();
+
+    if(len % 2 != 0){
+        chrs= NULL;
+    }
+    size_t final_len = len/2;
+    for (size_t i=0, j=0; j<final_len; i+=2, j++){
+        chrs[j] = (hexstr[i] % 32 + 9) % 25 * 16 + (hexstr[i+1] % 32 + 9) % 25;
+    }
+    chrs[final_len] = '\0';
+}
+
+
+
+/*std::string to_string(uint8_t arr[], int size) {
 	char str[size];
  
 	char* s_buff = (char*)malloc(sizeof(char)*2);
@@ -1696,13 +1729,12 @@ std::string to_string(uint8_t arr[], int size) {
 		}
 	}
 	std::string str_s=str;
-	cout << "STR = " << str << "\n";
 	return(str_s);
-}
+}*/
 
 
 
-void from_string(string str_s, uint8_t arr[]) {
+/*void from_string(string str_s, uint8_t arr[]) {
 	char str[str_s.length()+1];
 	strcpy(str,str_s.c_str());
 	int cum = 1;
@@ -1714,7 +1746,7 @@ void from_string(string str_s, uint8_t arr[]) {
 		cum +=step;
 		arr[i] = strtol(sub, NULL, 16);
 	 }
-}
+}*/
 
 
 
@@ -1779,8 +1811,6 @@ class PairKey{
 
 
 
-//int size = 32;
-
 
 
 
@@ -1788,7 +1818,7 @@ class PairKey{
 
 std::string generatePairKey(){
 
-	cout <<"****GENERATE";
+	cout <<"****GENERATE\n";
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
@@ -1801,39 +1831,64 @@ std::string generatePairKey(){
 
 
 	uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
+	cout << "\nPUB = \n";
+	for(int i=0; i<64; i++){
+		printf("%d,", publicKeyInt[i]);
+	}
+	cout << "\n";
+	cout << "\nPRIV = \n";
+	for(int i=0; i<32; i++){
+		printf("%d,", privateKeyInt[i]);
+	}
+	cout << "\n";
+
 
 
 	pub= to_string(publicKeyInt, 64);
 	priv= to_string(privateKeyInt, 32);
 
-
 	return (pub+"-"+priv);
 }
 
 
-std::string sign(string priv, char hash_code[]){
+std::string sign(std::string priv, std::string hash_code){
 
-	cout << "****SIGN \n";
+	cout << "****SIGN\n";
+	
 
 	#if uECC_SUPPORTS_secp256r1
 	    curves[0] = uECC_secp256r1();
 	#endif
+
 	
 	uint8_t privateKeyInt[32];
 	uint8_t hashInt[32];
 	uint8_t sigInt[64];
 
-	from_string(priv,privateKeyInt);
+
+	//privateKeyInt=from_string(priv);
+	//hashInt=from_string(hash_code);
+	from_string(priv, privateKeyInt);
 	from_string(hash_code, hashInt);
+	cout << "\nPRIV = \n";
+	for(int i=0; i<32; i++){
+		printf("%d,", privateKeyInt[i]);
+	}
+	cout << "\n";
+	cout << "\nHASH = \n";
+	for(int i=0; i<32; i++){
+		printf("%d,", hashInt[i]);
+	}
+	cout << "\n";
+
+	
 
 	uECC_sign(privateKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]);
-
-
-	/*cout << "\nSIGNATURE INT = \n";
+	cout << "\nSIG = \n";
 	for(int i=0; i<64; i++){
-		printf("%d,",sigInt[i]);
+		printf("%d,", sigInt[i]);
 	}
-	cout << "\n";*/
+	cout << "\n";
 
 
 	return(to_string(sigInt, 64));
@@ -1842,7 +1897,7 @@ std::string sign(string priv, char hash_code[]){
 
 
 
-bool verify(string pub, char hash_code[], string sig){
+bool verify(string pub, string hash_code, string sig){
 
 	cout << "*****VERIFY\n";
 
@@ -1854,9 +1909,28 @@ bool verify(string pub, char hash_code[], string sig){
 	uint8_t hashInt[32];
 	uint8_t sigInt[64];
 
+	/*publicKeyInt=from_string(pub);
+	hashInt=from_string(hash_code);
+	sigInt=from_string(sig);*/
+
 	from_string(pub, publicKeyInt);
 	from_string(hash_code, hashInt);
 	from_string(sig, sigInt);
+	cout << "\nPUB = \n";
+	for(int i=0; i<64; i++){
+		printf("%d,", publicKeyInt[i]);
+	}
+	cout << "\n";
+	cout << "\nHASH = \n";
+	for(int i=0; i<32; i++){
+		printf("%d,", hashInt[i]);
+	}
+	cout << "\n";
+	cout << "\nSIG = \n";
+	for(int i=0; i<64; i++){
+		printf("%d,", sigInt[i]);
+	}
+	cout << "\n";
 
 	/*std::cout << "\nSIGNATURE CHAR VERIFY() = \n" << sig;
 
@@ -1867,6 +1941,17 @@ bool verify(string pub, char hash_code[], string sig){
 	cout << "\n";*/
 
 	return(uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]));
+}
+
+
+std::string split(std::string pairKey,int arg){
+	if(arg==0){
+		return(pairKey.substr(0, pairKey.find("-")));
+	}else{
+		if(arg==1){
+			return(pairKey.substr(pairKey.find("-")+1,pairKey.length()));
+		}
+	}
 }
 
 
@@ -1889,17 +1974,42 @@ BOOST_PYTHON_MODULE(signature)
   def("generatePairKey", generatePairKey);
   def("sign", sign);
   def("verify", verify);
+  def("split", split);
 
 }
 
 
 
 int main(){
-	char hash_code[500] = "248D6A61D20638B8E5C026930C3E6039";
+	std::string hash_code = "5a822196bf1c45b1e74c6d04e4127d0296d64695932f40909bdab3ba8a9b0528";
 
 
 	std::string pairKey = generatePairKey();
-	cout << pairKey;
+	std::string pairKey2 = generatePairKey();
+	//cout << "PUB-PRIV = " << pairKey << "\n";
+
+
+	std::string pub = split(pairKey, 0);
+	std::string pub2 = split(pairKey2,0);
+	cout << "PUB = " << pub << "\n";
+
+
+	std::string priv = split(pairKey, 1);
+	std::string priv2 = split(pairKey2,1);
+	cout << "PRIV = " << priv << "\n";
+
+
+	std::string sig = sign(priv, hash_code);
+	cout << "SIG =" << sig << "\n";
+
+	if(verify(pub, hash_code, sig)){
+		printf("VALID SIGNATURE !\n");
+	}
+	else{
+		printf("NON VALID SIGNATURE !\n");
+	}
+	
+
 
 
 

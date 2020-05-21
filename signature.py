@@ -1,11 +1,8 @@
 import signature
 
-def generatePairKey(priv, pub):
-	signature.generatePairKey(priv, pub)
+def generatePairKey():
+	val=signature.generatePairKey()
+	return val
 
 
-priv=""
-pub=""
-generatePairKey(priv, pub)
-print("RESULT = ");
-print(priv)
+print signature.generatePairKey();
