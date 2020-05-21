@@ -1674,15 +1674,6 @@ void vli_print( uint8_t *vli, unsigned int size) {
 }
 
 
-void substr(char s[], char sub[], int p, int l) {
-   int c = 0;
-   while (c < l) {
-      sub[c] = s[p+c-1];
-      c++;
-   }
-   sub[c] = '\0';
-}
-
 
 
 std::string to_string(const uint8_t *v, const int s) {
@@ -1715,101 +1706,7 @@ void from_string(string hexstr, uint8_t chrs[])
 
 
 
-/*std::string to_string(uint8_t arr[], int size) {
-	char str[size];
- 
-	char* s_buff = (char*)malloc(sizeof(char)*2);
-	for (int i = 0; i < size; i++) {
-		sprintf(s_buff, "%x", arr[i]);
-		if(arr[i]>15) {
-		 	strcat(str, s_buff);
-		} else {
-			strcat(str, "0");
-			strcat(str, s_buff);
-		}
-	}
-	std::string str_s=str;
-	return(str_s);
-}*/
-
-
-
-/*void from_string(string str_s, uint8_t arr[]) {
-	char str[str_s.length()+1];
-	strcpy(str,str_s.c_str());
-	int cum = 1;
-	int step = 2;
-	int i;
-	for (i = 0; cum < strlen(str); i++) {
-		char sub[step];
-		substr(str, sub,cum, step);
-		cum +=step;
-		arr[i] = strtol(sub, NULL, 16);
-	 }
-}*/
-
-
-
-
-
 const struct uECC_Curve_t * curves[1];
-
-class PairKey{
-
-	public:
-	std::string priv;
-	std::string pub;
-
-	public :
-	PairKey(const std::string priv_param, const std::string pub_param) : priv(priv_param), pub(pub_param){
-	}
-
-	PairKey(){}
-
-	void set_priv(std::string priv_val){
-		this->priv=priv_val;
-	}
-
-	std::string get_priv() const{
-		return priv;
-	}
-
-	void set_pub(std::string pub_val){
-		this->pub=pub_val;
-	}
-
-	std::string get_pub() const{
-		return pub;
-	}
-
-
-	void generate_pair_key(){
-
-		cout << "GENERATE PAR KEY \n";
-
-
-		#if uECC_SUPPORTS_secp256r1
-		    curves[0] = uECC_secp256r1();
-		#endif
-
-
-		uint8_t privateKeyInt[32];
-		uint8_t publicKeyInt[64];
-		std::string _pub, _priv;
-
-
-		uECC_make_key(publicKeyInt, privateKeyInt,curves[0]);
-
-
-		_pub=to_string(publicKeyInt, 64);
-		this->pub = _pub;
-
-		_priv=to_string(privateKeyInt, 32);
-		this->priv = _priv;
-	}
-};
-
-
 
 
 
@@ -1866,8 +1763,6 @@ std::string sign(std::string priv, std::string hash_code){
 	uint8_t sigInt[64];
 
 
-	//privateKeyInt=from_string(priv);
-	//hashInt=from_string(hash_code);
 	from_string(priv, privateKeyInt);
 	from_string(hash_code, hashInt);
 	cout << "\nPRIV = \n";
@@ -1909,10 +1804,6 @@ bool verify(string pub, string hash_code, string sig){
 	uint8_t hashInt[32];
 	uint8_t sigInt[64];
 
-	/*publicKeyInt=from_string(pub);
-	hashInt=from_string(hash_code);
-	sigInt=from_string(sig);*/
-
 	from_string(pub, publicKeyInt);
 	from_string(hash_code, hashInt);
 	from_string(sig, sigInt);
@@ -1932,13 +1823,6 @@ bool verify(string pub, string hash_code, string sig){
 	}
 	cout << "\n";
 
-	/*std::cout << "\nSIGNATURE CHAR VERIFY() = \n" << sig;
-
-	cout << "\nSIGNATURE BASE 10 VERIFY() = \n";
-	for(int i=0; i<64; i++){
-		printf("%d,", sigInt[i]);
-	}
-	cout << "\n";*/
 
 	return(uECC_verify(publicKeyInt, hashInt, sizeof(hashInt), sigInt, curves[0]));
 }
@@ -1961,15 +1845,6 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(signature)
 {
-  
-
-  /*class_<PairKey>("PairKey")
-  	.def("get_priv", &PairKey::get_priv)
-  	.def("set_priv", &PairKey::set_priv)
-  	.def("get_pub", &PairKey::get_pub)
-  	.def("set_pub", &PairKey::set_pub)
-  	.def("generate_pair_key" &PairKey::generate_pair_key);*/
-  //, init<std::string, std::string>()).add_property("priv", &PairKey::get_priv, &PairKey::set_priv).add_property("pub", &PairKey::get_pub, &PairKey::set_pub);
 
   def("generatePairKey", generatePairKey);
   def("sign", sign);
@@ -1986,7 +1861,6 @@ int main(){
 
 	std::string pairKey = generatePairKey();
 	std::string pairKey2 = generatePairKey();
-	//cout << "PUB-PRIV = " << pairKey << "\n";
 
 
 	std::string pub = split(pairKey, 0);
@@ -2009,55 +1883,6 @@ int main(){
 		printf("NON VALID SIGNATURE !\n");
 	}
 	
-
-
-
-
-	/*PairKey* keys = new PairKey();
-
-	keys->generate_pair_key();
-	//keys->set_priv("A33CE45964FF2167F6ECEDD419DB06C1");
-	//keys->set_pub("248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1");
-	cout << "PRIVATE = " << keys->get_priv() << "\n";
-	cout << "PUBLIC = " << keys->get_pub() << "\n";
-
-	std:string sig = sign(keys->get_priv(),hash_code);
-	cout << "SIGNATURE = " << sig << "\n";
-
-	uint8_t sigInt[64];
-	from_string(sig, sigInt);
-	cout << "\nSIGNATURE INT AAAAFTERRRR= \n";
-	for(int i=0; i<64; i++){
-		printf("%d,",sigInt[i]);
-	}
-	cout << "\n";
-
-
-
-	if(verify(keys->get_pub(), hash_code, sig)){
-		cout << "true\n";
-	}else{
-		cout << "false\n";
-	}*/
-
-
-
-
-
-
-	//macout << "-------------->\nPRIV = " << keys->priv << "\nPUB = " << keys->pub <<"\n";
-	/*string sig = sign(keys->priv, hash_code);
-	std::cout << "\nSIGNATURE MAIN = \n" << sig;
-	from_string(sig, sigInt);
-	cout << "\nSIGNATURE BASE 10 MAIN = \n";
-	for(int i=0; i<64; i++){
-		printf("%d,", sigInt[i]);
-	}
-	
-	
-	cout << "\nSIGNATURE APRES TO_STRING MAIN = \n" << sigTest;
-	cout << "\n";
-	std::cout <<  verify(keys->pub, hash_code,sig) << "\n";*/
 
 }
 
